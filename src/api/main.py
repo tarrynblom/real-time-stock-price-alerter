@@ -53,6 +53,8 @@ class HealthResponse(BaseModel):
     timestamp: datetime
     model_trained: bool
     version: str
+    services: Dict[str, Any]
+    metrics: Dict[str, Any]
 
 # API Endpoints
 @app.get("/", response_model=Dict[str, str])
@@ -67,13 +69,37 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint"""
+    """Simple health check endpoint"""
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now(),
         model_trained=prediction_service.model_trainer.is_trained,
-        version="1.0.0"
+        version="1.0.0",
+        services={"api": {"status": "healthy"}},
+        metrics={
+            "models_loaded": 1 if prediction_service.model_trainer.is_trained else 0
+        }
     )
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    # This will be enhanced when Prometheus integration is added
+    # For now, return basic text metrics
+    metrics_text = f"""# HELP api_requests_total Total number of API requests
+# TYPE api_requests_total counter
+api_requests_total{{method="GET",endpoint="/health",status_code="200"}} 0
+
+# HELP model_trained_status Model training status
+# TYPE model_trained_status gauge
+model_trained_status {1 if prediction_service.model_trainer.is_trained else 0}
+
+# HELP api_health_status API health status (1=healthy, 0=unhealthy)
+# TYPE api_health_status gauge
+api_health_status 1
+"""
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(metrics_text)
 
 @app.post("/train")
 async def train_model(request: TrainingRequest, background_tasks: BackgroundTasks):
