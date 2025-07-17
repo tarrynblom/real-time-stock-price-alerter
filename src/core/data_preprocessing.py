@@ -12,15 +12,12 @@ class DataPreprocessor:
     def preprocess_dataset(self, dataset: StockDataset) -> Optional[pd.DataFrame]:
         """Complete preprocessing pipeline"""
         try:
-            # Convert to DataFrame
             df = dataset.to_dataframe()
             
-            # Validate data quality
             if not self._validate_data_quality(df):
                 logger.error(f"Data quality validation failed for {dataset.symbol}")
                 return None
             
-            # Clean and enhance data
             df = self._clean_data(df)
             df = self._add_technical_features(df)
             df = self._handle_missing_values(df)
@@ -38,18 +35,15 @@ class DataPreprocessor:
             logger.error("Empty DataFrame")
             return False
         
-        # Check for required columns
         missing_cols = set(self.required_columns) - set(df.columns)
         if missing_cols:
             logger.error(f"Missing required columns: {missing_cols}")
             return False
         
-        # Check for sufficient data points
         if len(df) < 20:
             logger.error(f"Insufficient data points: {len(df)}")
             return False
         
-        # Check for data integrity
         if (df[['open', 'high', 'low', 'close']] <= 0).any().any():
             logger.error("Invalid price data found (negative or zero values)")
             return False
@@ -60,10 +54,8 @@ class DataPreprocessor:
         """Clean and validate price data"""
         df_clean = df.copy()
         
-        # Remove duplicates
         df_clean = df_clean[~df_clean.index.duplicated(keep='first')]
         
-        # Validate price relationships
         invalid_rows = (
             (df_clean['high'] < df_clean['low']) |
             (df_clean['high'] < df_clean['open']) |
@@ -122,17 +114,14 @@ class DataPreprocessor:
         """Handle missing values with appropriate strategies"""
         df_filled = df.copy()
         
-        # Forward fill for price data
         price_columns = ['open', 'high', 'low', 'close']
         df_filled[price_columns] = df_filled[price_columns].fillna(method='ffill')
         
-        # Interpolate for technical indicators
         technical_columns = ['rsi', 'macd', 'price_volatility']
         for col in technical_columns:
             if col in df_filled.columns:
                 df_filled[col] = df_filled[col].interpolate(method='linear')
         
-        # Fill remaining with median
         numeric_columns = df_filled.select_dtypes(include=[np.number]).columns
         for col in numeric_columns:
             df_filled[col] = df_filled[col].fillna(df_filled[col].median())

@@ -27,10 +27,8 @@ class SecurityManager:
         if not symbol:
             return None
             
-        # Remove non-alphanumeric characters and convert to uppercase
         cleaned = ''.join(c.upper() for c in symbol if c.isalnum())
         
-        # Validate length (typical stock symbols are 1-5 characters)
         if not (1 <= len(cleaned) <= 5):
             logger.warning(f"Invalid symbol format: {symbol}")
             return None

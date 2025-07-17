@@ -14,19 +14,16 @@ class DataIngestionService:
     
     def fetch_stock_data(self, symbol: str, interval: str = "5min") -> Optional[StockDataset]:
         """Fetch and validate stock data from API"""
-        # Sanitize symbol
         clean_symbol = self.security_manager.sanitize_symbol(symbol)
         if not clean_symbol:
             logger.error(f"Invalid symbol: {symbol}")
             return None
         
-        # Fetch raw data
         raw_data = self.api_client.get_intraday_data(clean_symbol, interval)
         if not raw_data:
             logger.error(f"Failed to fetch data for {clean_symbol}")
             return None
         
-        # Parse and validate data
         try:
             return self._parse_alpha_vantage_data(raw_data, clean_symbol, interval)
         except Exception as e:
@@ -42,12 +39,10 @@ class DataIngestionService:
         if not time_series:
             raise ValueError(f"No time series data found for {symbol}")
         
-        # Extract metadata
         last_refreshed = datetime.fromisoformat(
             meta_data.get('3. Last Refreshed', datetime.now().isoformat())
         )
         
-        # Parse data points
         data_points = []
         for timestamp_str, values in time_series.items():
             try:
@@ -67,7 +62,6 @@ class DataIngestionService:
         if not data_points:
             raise ValueError(f"No valid data points found for {symbol}")
         
-        # Sort by timestamp (most recent first)
         data_points.sort(key=lambda x: x.timestamp, reverse=True)
         
         return StockDataset(
