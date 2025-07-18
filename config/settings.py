@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
     
     # API Configuration
-    alpha_vantage_api_key: str
+    alpha_vantage_api_key: str = "test_key"  # Default for testing
     financial_modeling_prep_api_key: Optional[str] = None
     api_base_url: str = "https://www.alphavantage.co/query"
     
