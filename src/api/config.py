@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class APIConfig(BaseModel):
+    model_config = ConfigDict(env_prefix="API_")
+
     host: str = "0.0.0.0"
     port: int = 8000
     debug: bool = False
@@ -14,6 +16,3 @@ class APIConfig(BaseModel):
 
     # Security
     cors_origins: list = ["*"]
-
-    class Config:
-        env_prefix = "API_"

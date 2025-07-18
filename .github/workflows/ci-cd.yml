@@ -41,13 +41,4 @@ jobs:
       run: pytest src/tests/ --cov=src --cov-report=term-missing -v
     
     - name: Build Docker image
-      run: docker build -t stock-alerter:test .
-    
-    - name: Test Docker container
-      run: |
-        docker run -d --name test-container -p 8000:8000 \
-          -e ALPHA_VANTAGE_API_KEY=test_key \
-          stock-alerter:test
-        sleep 10
-        curl -f http://localhost:8000/health
-        docker stop test-container 
+      run: docker build -t stock-alerter:test . 

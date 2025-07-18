@@ -1,8 +1,11 @@
 # config/settings.py
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from typing import Optional
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
+    
     # API Configuration
     alpha_vantage_api_key: str
     financial_modeling_prep_api_key: Optional[str] = None
@@ -21,9 +24,5 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     log_file: str = "logs/stock_alerter.log"
-    
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
 settings = Settings()
