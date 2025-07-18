@@ -1,7 +1,5 @@
 # src/core/prediction_service.py
-import pandas as pd
-import numpy as np
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from datetime import datetime
 from loguru import logger
 

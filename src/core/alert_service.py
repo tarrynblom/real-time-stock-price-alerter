@@ -1,6 +1,6 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from loguru import logger
-from src.core.alerting_engine import AlertingEngine, Alert
+from src.core.alerting_engine import AlertingEngine
 from src.core.notification_service import NotificationService
 from src.core.prediction_service import PredictionService
 

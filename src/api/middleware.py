@@ -1,4 +1,4 @@
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi.middleware.base import BaseHTTPMiddleware
 import time
 from loguru import logger

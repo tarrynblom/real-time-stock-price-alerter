@@ -1,7 +1,7 @@
 # src/core/data_preprocessing.py
 import pandas as pd
 import numpy as np
-from typing import Tuple, Optional
+from typing import Optional
 from loguru import logger
 from src.models.data_models import StockDataset
 

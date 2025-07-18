@@ -1,7 +1,6 @@
 # src/core/data_ingestion.py
 from typing import Optional, Dict, Any
-import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from loguru import logger
 from src.core.api_client import AlphaVantageClient
 from src.models.data_models import StockDataset, StockDataPoint

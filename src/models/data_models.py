@@ -1,6 +1,6 @@
 # src/models/data_models.py
 from pydantic import BaseModel, Field, field_validator
-from typing import Dict, List, Optional
+from typing import List
 from datetime import datetime
 import pandas as pd
 

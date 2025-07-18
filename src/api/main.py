@@ -1,15 +1,11 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from datetime import datetime
 from loguru import logger
-import uvicorn
-
 from src.core.prediction_service import PredictionService
 from src.core.alert_service import AlertService
-from src.core.alerting_engine import AlertType, AlertSeverity, AlertRule
-from config.settings import settings
 
 # Initialize FastAPI app
 app = FastAPI(
