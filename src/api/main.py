@@ -17,7 +17,7 @@ app = FastAPI(
     description="Real-time stock price prediction and alerting microservice",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Add CORS middleware
@@ -33,20 +33,24 @@ app.add_middleware(
 prediction_service = PredictionService()
 alert_service = AlertService(prediction_service)
 
+
 # Request/Response Models
 class PredictionRequest(BaseModel):
     symbol: str = Field(..., min_length=1, max_length=5, description="Stock symbol")
     interval: str = Field(default="5min", description="Data interval")
 
+
 class TrainingRequest(BaseModel):
     symbol: str = Field(..., min_length=1, max_length=5, description="Stock symbol")
     interval: str = Field(default="5min", description="Data interval")
+
 
 class AlertRuleConfig(BaseModel):
     alert_type: str = Field(..., description="Alert type")
     threshold_pct: float = Field(..., description="Threshold percentage")
     severity: str = Field(..., description="Alert severity")
     enabled: bool = Field(default=True, description="Whether rule is enabled")
+
 
 class HealthResponse(BaseModel):
     status: str
@@ -56,6 +60,7 @@ class HealthResponse(BaseModel):
     services: Dict[str, Any]
     metrics: Dict[str, Any]
 
+
 # API Endpoints
 @app.get("/", response_model=Dict[str, str])
 async def root():
@@ -64,8 +69,9 @@ async def root():
         "message": "Stock Price Alerter API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -78,8 +84,9 @@ async def health_check():
         services={"api": {"status": "healthy"}},
         metrics={
             "models_loaded": 1 if prediction_service.model_trainer.is_trained else 0
-        }
+        },
     )
+
 
 @app.get("/metrics")
 async def metrics():
@@ -99,83 +106,83 @@ model_trained_status {1 if prediction_service.model_trainer.is_trained else 0}
 api_health_status 1
 """
     from fastapi.responses import PlainTextResponse
+
     return PlainTextResponse(metrics_text)
+
 
 @app.post("/train")
 async def train_model(request: TrainingRequest, background_tasks: BackgroundTasks):
     """Train ML model for a specific stock symbol"""
     try:
         symbol = request.symbol.upper().strip()
-        
+
         # Run training in background for better UX
         def train_model_task():
             result = prediction_service.train_model(symbol, request.interval)
             logger.info(f"Training completed for {symbol}: {result}")
-        
+
         background_tasks.add_task(train_model_task)
-        
+
         return {
             "message": f"Model training started for {symbol}",
             "symbol": symbol,
-            "status": "training_in_progress"
+            "status": "training_in_progress",
         }
-        
+
     except Exception as e:
         logger.error(f"Training request failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/predict")
 async def predict_price(request: PredictionRequest):
     """Get price prediction for a stock symbol"""
     try:
         symbol = request.symbol.upper().strip()
-        
+
         if not prediction_service.model_trainer.is_trained:
             raise HTTPException(
-                status_code=400, 
-                detail="Model not trained. Call /train endpoint first."
+                status_code=400, detail="Model not trained. Call /train endpoint first."
             )
-        
+
         result = prediction_service.predict_next_price(symbol, request.interval)
-        
-        if not result.get('prediction_successful', True):
+
+        if not result.get("prediction_successful", True):
             raise HTTPException(
-                status_code=500,
-                detail=result.get('error', 'Prediction failed')
+                status_code=500, detail=result.get("error", "Prediction failed")
             )
-        
+
         return result
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Prediction request failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/alert")
 async def check_alerts(request: PredictionRequest):
     """Check for alerts based on price prediction"""
     try:
         symbol = request.symbol.upper().strip()
-        
+
         if not prediction_service.model_trainer.is_trained:
             raise HTTPException(
-                status_code=400,
-                detail="Model not trained. Call /train endpoint first."
+                status_code=400, detail="Model not trained. Call /train endpoint first."
             )
-        
+
         result = alert_service.check_and_alert(symbol, request.interval)
-        
-        if not result.get('success'):
+
+        if not result.get("success"):
             raise HTTPException(
-                status_code=500,
-                detail=result.get('error', 'Alert check failed')
+                status_code=500, detail=result.get("error", "Alert check failed")
             )
-        
+
         return result
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Alert request failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))

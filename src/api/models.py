@@ -40,4 +40,4 @@ class AlertCheckResponse(BaseModel):
     prediction: PredictionResponse
     alerts_triggered: int
     alerts: List[AlertResponse]
-    notification_results: Dict[str, Any] 
+    notification_results: Dict[str, Any]
