@@ -6,6 +6,7 @@ from datetime import datetime
 from loguru import logger
 from src.core.prediction_service import PredictionService
 from src.core.alert_service import AlertService
+from src.api.middleware import RequestLoggingMiddleware
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -15,6 +16,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Add request logging middleware
+app.add_middleware(RequestLoggingMiddleware)
 
 # Add CORS middleware
 app.add_middleware(
