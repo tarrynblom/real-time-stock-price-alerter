@@ -8,57 +8,31 @@ A sophisticated financial technology solution that demonstrates advanced integra
 
 ### 🏗️ System Architecture
 
+The system follows a **modular monolith** architecture with clear service boundaries, designed for easy evolution to microservices:
+
 ```mermaid
-graph TB
-    subgraph "External APIs"
-        AV[Alpha Vantage API]
-        FMP[Financial Modeling Prep API]
+graph LR
+    subgraph "External"
+        API_SRC[Market Data APIs]
     end
     
-    subgraph "API Layer"
-        API[FastAPI REST API<br/>- /train<br/>- /predict<br/>- /alert<br/>- /health]
-        MW[Middleware<br/>- Request Logging<br/>- CORS<br/>- Security]
+    subgraph "Stock Price Alerter"
+        API[FastAPI REST API]
+        CORE[ML Prediction Engine]
+        ALERTS[Intelligent Alerting]
     end
     
-    subgraph "Core Services"
-        DI[Data Ingestion<br/>Service]
-        DP[Data Preprocessing<br/>Service]
-        FE[Feature Engineering<br/>Service]
-        MT[Model Trainer<br/>Service]
-        PS[Prediction Service<br/>Orchestrator]
-        AS[Alert Service<br/>Orchestrator]
-        AE[Alerting Engine<br/>Rules & Evaluation]
-        NS[Notification Service<br/>Multi-channel]
+    subgraph "Output"
+        NOTIF[Multi-channel Notifications]
     end
     
-    subgraph "Infrastructure"
-        D[Docker Container]
-        L[Logging System<br/>Loguru]
-        HC[Health Checks<br/>Monitoring]
-    end
-    
-    %% Data Flow
-    AV --> DI
-    FMP --> DI
-    
-    API --> PS
-    API --> AS
-    API --> MT
-    MW --> API
-    
-    PS --> DI
-    PS --> DP
-    PS --> FE
-    PS --> MT
-    
-    AS --> PS
-    AS --> AE
-    AS --> NS
-    
-    D --> API
-    D --> L
-    D --> HC
+    API_SRC --> API
+    API --> CORE
+    CORE --> ALERTS
+    ALERTS --> NOTIF
 ```
+
+> 📋 **For detailed architecture diagrams and technical decisions, see [System Design Document](docs/SYSTEM_DESIGN_DOCUMENT.md)**
 
 ### Technical Highlights
 
@@ -159,60 +133,15 @@ real-time-stock-price-alerter/
 └── 📁 logs/                        # Application logs
 ```
 
-### 🔄 Data Processing Flow
+### 🔄 Key Features
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as FastAPI API
-    participant PS as Prediction Service
-    participant DI as Data Ingestion
-    participant DP as Data Preprocessing
-    participant FE as Feature Engineering
-    participant MT as Model Trainer
-    participant AS as Alert Service
-    participant AE as Alerting Engine
-    participant NS as Notification Service
-    participant AV as Alpha Vantage API
-    
-    Note over Client,AV: Training Flow
-    Client->>API: POST /train {"symbol": "AAPL"}
-    API->>PS: train_model(symbol, interval)
-    PS->>DI: fetch_stock_data(symbol)
-    DI->>AV: get_intraday_data()
-    AV-->>DI: time series data
-    DI-->>PS: StockDataset
-    PS->>DP: preprocess_dataset()
-    DP-->>PS: cleaned DataFrame
-    PS->>FE: create_features()
-    FE-->>PS: features DataFrame
-    PS->>MT: train(X, y)
-    MT-->>PS: training metrics
-    PS-->>API: training results
-    API-->>Client: {"status": "training_completed"}
-    
-    Note over Client,NS: Prediction & Alert Flow
-    Client->>API: POST /alert {"symbol": "AAPL"}
-    API->>AS: check_and_alert(symbol)
-    AS->>PS: predict_next_price(symbol)
-    PS->>DI: fetch_stock_data(symbol)
-    DI->>AV: get_intraday_data()
-    AV-->>DI: latest data
-    DI-->>PS: StockDataset
-    PS->>DP: preprocess_dataset()
-    DP-->>PS: cleaned DataFrame
-    PS->>FE: create_features()
-    FE-->>PS: features DataFrame
-    PS->>MT: predict(latest_features)
-    MT-->>PS: prediction
-    PS-->>AS: prediction_result
-    AS->>AE: evaluate_prediction()
-    AE-->>AS: alerts[]
-    AS->>NS: send_alerts(alerts)
-    NS-->>AS: notification_results
-    AS-->>API: complete_results
-    API-->>Client: alerts and predictions
-```
+- **🔮 ML-Powered Predictions**: Linear regression model with engineered time-series features
+- **⚡ Real-Time Processing**: Sub-100ms prediction latency with intelligent caching
+- **🚨 Smart Alerting**: Configurable thresholds with multi-channel notifications
+- **🔌 REST API**: Complete FastAPI interface with automatic documentation
+- **🐳 Production Ready**: Docker containerization with health checks and monitoring
+
+> 📊 **For detailed data flow diagrams and pipeline architecture, see [ML Model Documentation](docs/ML_MODEL_DOCUMENTATION.md)**
 
 ## 🔧 Implementation Details
 
@@ -294,6 +223,8 @@ curl -X GET "http://localhost:5000/model/stats"
 ### Core Documentation
 - **[API Integration Guide](docs/API_INTEGRATION_GUIDE.md)** - Comprehensive guide for integrating with the API
 - **[Deployment & Troubleshooting](docs/DEPLOYMENT_TROUBLESHOOTING.md)** - Setup, deployment, and common issue resolution
+- **[ML Model Documentation](docs/ML_MODEL_DOCUMENTATION.md)** - Complete ML pipeline, model selection, and performance analysis
+- **[System Design Document](docs/SYSTEM_DESIGN_DOCUMENT.md)** - Architecture decisions, trade-offs, and technical rationale
 - **[Interactive API Docs](http://localhost:8000/docs)** - Auto-generated Swagger/OpenAPI documentation
 
 ### Demo & Tutorials
