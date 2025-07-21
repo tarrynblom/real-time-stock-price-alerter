@@ -1,8 +1,6 @@
 import time
 import uuid
-from typing import Callable
-from fastapi import Request, Response
-from fastapi.responses import StreamingResponse
+from fastapi import Request
 from loguru import logger
 import json
 
@@ -52,7 +50,7 @@ class RequestLoggingMiddleware:
                 try:
                     error_detail = json.loads(response_body.decode())
                     logger.warning(f"[{request_id}] Error response: {error_detail}")
-                except:
+                except (json.JSONDecodeError, UnicodeDecodeError):
                     # If response isn't JSON, log first 200 chars
                     logger.warning(
                         f"[{request_id}] Error response: {response_body[:200]}"
