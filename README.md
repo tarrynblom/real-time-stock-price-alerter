@@ -6,6 +6,60 @@ A machine learning-powered stock price monitoring system that fetches real-time 
 
 A sophisticated financial technology solution that demonstrates advanced integration of machine learning with real-time data processing. This system combines robust backend architecture with predictive analytics to deliver actionable insights in financial markets.
 
+### 🏗️ System Architecture
+
+```mermaid
+graph TB
+    subgraph "External APIs"
+        AV[Alpha Vantage API]
+        FMP[Financial Modeling Prep API]
+    end
+    
+    subgraph "API Layer"
+        API[FastAPI REST API<br/>- /train<br/>- /predict<br/>- /alert<br/>- /health]
+        MW[Middleware<br/>- Request Logging<br/>- CORS<br/>- Security]
+    end
+    
+    subgraph "Core Services"
+        DI[Data Ingestion<br/>Service]
+        DP[Data Preprocessing<br/>Service]
+        FE[Feature Engineering<br/>Service]
+        MT[Model Trainer<br/>Service]
+        PS[Prediction Service<br/>Orchestrator]
+        AS[Alert Service<br/>Orchestrator]
+        AE[Alerting Engine<br/>Rules & Evaluation]
+        NS[Notification Service<br/>Multi-channel]
+    end
+    
+    subgraph "Infrastructure"
+        D[Docker Container]
+        L[Logging System<br/>Loguru]
+        HC[Health Checks<br/>Monitoring]
+    end
+    
+    %% Data Flow
+    AV --> DI
+    FMP --> DI
+    
+    API --> PS
+    API --> AS
+    API --> MT
+    MW --> API
+    
+    PS --> DI
+    PS --> DP
+    PS --> FE
+    PS --> MT
+    
+    AS --> PS
+    AS --> AE
+    AS --> NS
+    
+    D --> API
+    D --> L
+    D --> HC
+```
+
 ### Technical Highlights
 
 - **Production-Ready Architecture**: Scalable API design with clean separation of concerns
@@ -65,16 +119,99 @@ python app.py
 
 ```
 real-time-stock-price-alerter/
-├── README.md
-├── requirements.txt
-├── .env.example
-├── stock_alerter.py      # Main application logic
-├── data_fetcher.py       # API integration
-├── ml_model.py          # Machine learning model
-├── alerting.py          # Alert logic
-├── app.py               # Optional Flask API
-└── tests/
-    └── test_*.py        # Unit tests
+├── 📄 README.md                    # This documentation
+├── 📄 requirements.txt             # Python dependencies
+├── 📄 docker-compose.yml           # Container orchestration
+├── 📄 Dockerfile                   # Container definition
+├── 📁 config/                      # Configuration management
+│   ├── __init__.py
+│   └── settings.py                 # Centralized settings
+├── 📁 src/                         # Source code
+│   ├── 📁 api/                     # FastAPI REST interface
+│   │   ├── main.py                 # API endpoints & routing
+│   │   ├── middleware.py           # Request logging, CORS
+│   │   └── models.py               # Pydantic request/response models
+│   ├── 📁 core/                    # Business logic services
+│   │   ├── data_ingestion.py       # External API integration
+│   │   ├── data_preprocessing.py   # Data cleaning & validation
+│   │   ├── feature_engineering.py # ML feature creation
+│   │   ├── model_trainer.py        # ML model training
+│   │   ├── prediction_service.py   # Orchestrates prediction pipeline
+│   │   ├── alert_service.py        # Orchestrates alerting workflow
+│   │   ├── alerting_engine.py      # Alert rules & evaluation
+│   │   └── notification_service.py # Multi-channel notifications
+│   ├── 📁 models/                  # Data models & schemas
+│   │   └── data_models.py          # Pydantic models for stock data
+│   ├── 📁 utils/                   # Utility functions
+│   │   ├── feature_selection.py    # ML data preparation
+│   │   ├── feature_validation.py   # Data quality checks
+│   │   └── security.py             # Input sanitization
+│   └── 📁 tests/                   # Test suite
+│       ├── test_api.py             # API endpoint tests
+│       └── test_middleware.py      # Middleware tests
+├── 📁 scripts/                     # Deployment & utility scripts
+│   ├── deploy.sh                   # Automated deployment
+│   └── test_api.sh                 # API testing script
+├── 📁 demo/                        # Demo materials
+│   ├── demo_script.md              # Live demo instructions
+│   ├── demo_setup.sh               # Demo environment setup
+│   └── demo_postman_collection.json # API testing collection
+└── 📁 logs/                        # Application logs
+```
+
+### 🔄 Data Processing Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as FastAPI API
+    participant PS as Prediction Service
+    participant DI as Data Ingestion
+    participant DP as Data Preprocessing
+    participant FE as Feature Engineering
+    participant MT as Model Trainer
+    participant AS as Alert Service
+    participant AE as Alerting Engine
+    participant NS as Notification Service
+    participant AV as Alpha Vantage API
+    
+    Note over Client,AV: Training Flow
+    Client->>API: POST /train {"symbol": "AAPL"}
+    API->>PS: train_model(symbol, interval)
+    PS->>DI: fetch_stock_data(symbol)
+    DI->>AV: get_intraday_data()
+    AV-->>DI: time series data
+    DI-->>PS: StockDataset
+    PS->>DP: preprocess_dataset()
+    DP-->>PS: cleaned DataFrame
+    PS->>FE: create_features()
+    FE-->>PS: features DataFrame
+    PS->>MT: train(X, y)
+    MT-->>PS: training metrics
+    PS-->>API: training results
+    API-->>Client: {"status": "training_completed"}
+    
+    Note over Client,NS: Prediction & Alert Flow
+    Client->>API: POST /alert {"symbol": "AAPL"}
+    API->>AS: check_and_alert(symbol)
+    AS->>PS: predict_next_price(symbol)
+    PS->>DI: fetch_stock_data(symbol)
+    DI->>AV: get_intraday_data()
+    AV-->>DI: latest data
+    DI-->>PS: StockDataset
+    PS->>DP: preprocess_dataset()
+    DP-->>PS: cleaned DataFrame
+    PS->>FE: create_features()
+    FE-->>PS: features DataFrame
+    PS->>MT: predict(latest_features)
+    MT-->>PS: prediction
+    PS-->>AS: prediction_result
+    AS->>AE: evaluate_prediction()
+    AE-->>AS: alerts[]
+    AS->>NS: send_alerts(alerts)
+    NS-->>AS: notification_results
+    AS-->>API: complete_results
+    API-->>Client: alerts and predictions
 ```
 
 ## 🔧 Implementation Details
@@ -151,6 +288,18 @@ curl -X POST "http://localhost:5000/predict/AAPL"
 # Get current model performance
 curl -X GET "http://localhost:5000/model/stats"
 ```
+
+## 📚 Documentation
+
+### Core Documentation
+- **[API Integration Guide](docs/API_INTEGRATION_GUIDE.md)** - Comprehensive guide for integrating with the API
+- **[Deployment & Troubleshooting](docs/DEPLOYMENT_TROUBLESHOOTING.md)** - Setup, deployment, and common issue resolution
+- **[Interactive API Docs](http://localhost:8000/docs)** - Auto-generated Swagger/OpenAPI documentation
+
+### Demo & Tutorials
+- **[Demo Materials](demo/)** - Complete demo setup and presentation materials
+- **[Demo Script](demo/demo_script.md)** - Step-by-step demonstration guide
+- **[Postman Collection](demo/demo_postman_collection.json)** - API testing collection
 
 ## 🔮 Future Enhancements
 
