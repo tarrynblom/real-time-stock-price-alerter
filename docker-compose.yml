@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Stock Alerter API
   api:

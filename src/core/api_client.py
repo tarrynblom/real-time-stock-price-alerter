@@ -2,8 +2,23 @@
 from typing import Dict, Any, Optional
 import requests
 import time
+import sys
+import os
 from loguru import logger
-from config.settings import settings
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+try:
+    from config.settings import Settings
+
+    settings = Settings()
+except ImportError:
+
+    class Settings:
+        alpha_vantage_api_key = "test_key"
+        api_base_url = "https://www.alphavantage.co/query"
+
+    settings = Settings()
 
 
 class APIClient:

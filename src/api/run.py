@@ -19,7 +19,6 @@ def start_server():
         host=config.host,
         port=config.port,
         reload=config.reload,
-        debug=config.debug,
         workers=config.workers,
         log_level=config.log_level,
         access_log=config.access_log,

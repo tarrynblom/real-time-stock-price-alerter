@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app:/app/src
 
 # Set working directory
 WORKDIR /app

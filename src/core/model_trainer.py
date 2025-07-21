@@ -75,10 +75,16 @@ class ModelTrainer:
         }
 
         actual_direction = np.sign(y_test.diff().dropna())
-        predicted_direction = np.sign(pd.Series(y_test_pred).diff().dropna())
-        metrics["directional_accuracy"] = (
-            actual_direction == predicted_direction
-        ).mean()
+        predicted_direction = np.sign(
+            pd.Series(y_test_pred, index=y_test.index).diff().dropna()
+        )
+        common_index = actual_direction.index.intersection(predicted_direction.index)
+        if len(common_index) > 0:
+            metrics["directional_accuracy"] = (
+                actual_direction[common_index] == predicted_direction[common_index]
+            ).mean()
+        else:
+            metrics["directional_accuracy"] = 0.5  # Default fallback
 
         return metrics
 
