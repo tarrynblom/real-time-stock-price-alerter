@@ -105,6 +105,23 @@ def should_alert(current_price, predicted_price, threshold=0.01):
     return price_change > threshold
 ```
 
+### Screenshots
+
+Training:
+
+<img width="796" height="137" alt="Screenshot 2025-07-21 at 11 12 36" src="https://github.com/user-attachments/assets/0cf6eb54-0bb0-419d-a195-cc77a0c0be58" />
+
+Predict:
+
+<img width="818" height="189" alt="Screenshot 2025-07-21 at 11 12 53" src="https://github.com/user-attachments/assets/028e3d80-7227-4403-b510-c1f46cb8f257" />
+
+Alerts:
+
+<img width="818" height="289" alt="Screenshot 2025-07-21 at 11 17 12" src="https://github.com/user-attachments/assets/d24d7fc1-0e23-42aa-bbd8-054934bbf964" />
+
+
+
+
 ## 📊 Usage Examples
 
 ### Basic Usage
